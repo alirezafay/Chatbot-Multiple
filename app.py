@@ -4,7 +4,6 @@ import json
 import os
 
 app = Flask(__name__)
-
 API_KEY = os.environ.get("API_KEY")
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
 
@@ -21,7 +20,7 @@ def load_all_user_data(file_id):
         raise Exception(f"Failed to download: {response.status_code}")
 
 # Load user data once when app starts
-file_id = "YOUR_FILE_ID_HERE"  # <-- Replace this with the new file_id containing both users
+file_id = "1DiIYwGARYQGxPXpEWgugr6RNyu1c48tC"  # <-- Replace this with the new file_id containing both users
 all_users_data = load_all_user_data(file_id)
 
 #### Generate Context for Specific User
