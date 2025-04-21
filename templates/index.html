@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Your Bot</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="blurred-text">شرکت هتل‌سازی دریا آسیا</div>
+    <div class="chat-container">
+        <div class="chat-box">
+            <div class="chat-header" id="chatHeader">Personalized AI Chatbot</div>
+
+            <!-- Profile Selection -->
+            <select id="userSelector" onchange="updateProfile()">
+                <option value="user_ahmad">Ahmad</option>
+                <option value="user_sara">Sara</option>
+            </select>
+
+            <div class="chat-messages" id="messages"></div>
+
+            <textarea id="userInput" placeholder="Ask your questions..."></textarea>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Dynamically update the header and other elements based on the selected user profile
+        function updateProfile() {
+            const userId = document.getElementById('userSelector').value;
+            const chatHeader = document.getElementById('chatHeader');
+            const body = document.body;
+            const messagesDiv = document.getElementById('messages');
+
+            if (userId === 'user_ahmad') {
+                chatHeader.textContent = 'Chat with Ahmad - Business Manager';
+                body.style.backgroundImage = 'url("ahmad_background.png")'; // Background specific to Ahmad
+                messagesDiv.innerHTML = '<div><strong>Bot:</strong> Hello Ahmad! How can I assist you today with your business ventures?</div>';
+            } else {
+                chatHeader.textContent = 'Chat with Sara - AI Engineer';
+                body.style.backgroundImage = 'url("sara_background.png")'; // Background specific to Sara
+                messagesDiv.innerHTML = '<div><strong>Bot:</strong> Hello Sara! Ready to dive into AI and technology?</div>';
+            }
+        }
+
+        // Function to send the user's question and selected profile
+        async function sendMessage() {
+            const question = document.getElementById('userInput').value;
+            const userId = document.getElementById('userSelector').value;
+            
+            if (!question.trim()) {
+                alert("Please enter a question!");
+                return;
+            }
+
+            // Display user input in chat
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML += `<div class="user-message"><strong>You:</strong> ${question}</div>`;
+            
+            // Clear input field after sending
+            document.getElementById('userInput').value = '';
+
+            // Send the question to the backend
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    question: question,
+                    user_id: userId
+                })
+            });
+
+            // Get the response from the chatbot
+            const data = await response.json();
+            const botResponse = data.response || "Sorry, I didn't understand that.";
+
+            // Display the chatbot response
+            messagesDiv.innerHTML += `<div class="bot-message"><strong>Bot:</strong> ${botResponse}</div>`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;  // Scroll to the bottom
+        }
+
+        // Initialize the profile based on the default selected user
+        updateProfile();
+    </script>
+</body>
+</html>
