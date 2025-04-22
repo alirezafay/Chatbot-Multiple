@@ -27,85 +27,62 @@
 
     <script src="script.js"></script>
     <script>
-    let chatHistory = [];  // Store all chat messages
+        // Dynamically update the header and other elements based on the selected user profile
+        function updateProfile() {
+            const userId = document.getElementById('userSelector').value;
+            const chatHeader = document.getElementById('chatHeader');
+            const body = document.body;
+            const messagesDiv = document.getElementById('messages');
 
-    // Dynamically update header and load history
-    async function updateProfile() {
-        const userId = document.getElementById('userSelector').value;
-        const chatHeader = document.getElementById('chatHeader');
-
-        if (userId === 'user_ahmad') {
-            chatHeader.textContent = 'Chat with Ahmad - Business Manager';
-        } else {
-            chatHeader.textContent = 'Chat with Sara - AI Engineer';
+            if (userId === 'user_ahmad') {
+                chatHeader.textContent = 'Chat with Ahmad - Business Manager';
+                messagesDiv.innerHTML = '<div><strong>Bot:</strong> Hello Ahmad! How can I assist you today with your business ventures?</div>';
+            } else {
+                chatHeader.textContent = 'Chat with Sara - AI Engineer';
+                messagesDiv.innerHTML = '<div><strong>Bot:</strong> Hello Sara! Ready to dive into AI and technology?</div>';
+            }
         }
 
-        // Load chat history from backend
-        const response = await fetch('/history', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId })
-        });
+        // Function to send the user's question and selected profile
+        async function sendMessage() {
+            const question = document.getElementById('userInput').value;
+            const userId = document.getElementById('userSelector').value;
+            
+            if (!question.trim()) {
+                alert("Please enter a question!");
+                return;
+            }
 
-        const data = await response.json();
-        chatHistory = data.history || [];
+            // Display user input in chat
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML += `<div class="user-message"><strong>You:</strong> ${question}</div>`;
+            
+            // Clear input field after sending
+            document.getElementById('userInput').value = '';
 
-        // Update chat display
-        updateChatDisplay();
-    }
+            // Send the question to the backend
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    question: question,
+                    user_id: userId
+                })
+            });
 
-    // Send message
-    async function sendMessage() {
-        const question = document.getElementById('userInput').value;
-        const userId = document.getElementById('userSelector').value;
+            // Get the response from the chatbot
+            const data = await response.json();
+            const botResponse = data.response || "Sorry, I didn't understand that.";
 
-        if (!question.trim()) {
-            alert("Please enter a question!");
-            return;
+            // Display the chatbot response
+            messagesDiv.innerHTML += `<div class="bot-message"><strong>Bot:</strong> ${botResponse}</div>`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;  // Scroll to the bottom
         }
 
-        // Add user message to history
-        chatHistory.push({ role: 'user', content: question });
-
-        // Clear input and update display
-        document.getElementById('userInput').value = '';
-        updateChatDisplay();
-
-        // Send to backend
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: question, user_id: userId })
-        });
-
-        const data = await response.json();
-        const botResponse = data.response || "Sorry, I didn't understand that.";
-
-        // Add bot message to history
-        chatHistory.push({ role: 'bot', content: botResponse });
-
-        // Update display
-        updateChatDisplay();
-    }
-
-    // Show all messages
-    function updateChatDisplay() {
-        const messagesDiv = document.getElementById('messages');
-        messagesDiv.innerHTML = '';
-
-        chatHistory.forEach(msg => {
-            const roleClass = msg.role === 'user' ? 'user-message' : 'bot-message';
-            const label = msg.role === 'user' ? 'You' : 'Bot';
-            messagesDiv.innerHTML += `<div class="${roleClass}"><strong>${label}:</strong> ${msg.content}</div>`;
-        });
-
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-
-    // On page load, load default profile and chat
-    window.onload = () => {
+        // Initialize the profile based on the default selected user
         updateProfile();
-    };
-</script>
+    </script>
 </body>
 </html>
