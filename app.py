@@ -1,13 +1,30 @@
 from flask import Flask, request, jsonify, render_template
+from flask_sqlalchemy import SQLAlchemy
 import requests
 import json
 import os
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat_history.db'  # SQLite database file
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 API_KEY = os.environ.get("API_KEY")
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
 
-#### Load All User Profiles from Google Drive
+# Define the ChatHistory model for storing messages
+class ChatHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(80), nullable=False)
+    role = db.Column(db.String(10), nullable=False)  # 'user' or 'bot'
+    message = db.Column(db.Text, nullable=False)
+
+    def __repr__(self):
+        return f'<ChatHistory {self.id} {self.user_id} {self.role}>'
+
+@app.before_first_request
+def create_tables():
+    db.create_all()  # Creates the tables in the database when the app starts
+
 def load_all_user_data(file_id):
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     response = requests.get(url)
@@ -20,10 +37,10 @@ def load_all_user_data(file_id):
         raise Exception(f"Failed to download: {response.status_code}")
 
 # Load user data once when app starts
-file_id = "1DiIYwGARYQGxPXpEWgugr6RNyu1c48tC"  # <-- Replace this with the new file_id containing both users
+file_id = "1DiIYwGARYQGxPXpEWgugr6RNyu1c48tC"  # Replace this with the new file_id containing both users
 all_users_data = load_all_user_data(file_id)
 
-#### Generate Context for Specific User
+# Generate Context for Specific User
 def build_context(user_profile):
     return f"""
 User Profile:
@@ -85,7 +102,7 @@ Instructions:
 User Question: INSERT_USER_QUESTION_HERE
 """
 
-#### Send Request to Gemini
+# Send Request to Gemini
 def generate_response(user_question, user_id):
     user_profile = all_users_data["users"].get(user_id)
     if not user_profile:
@@ -102,7 +119,7 @@ def generate_response(user_question, user_id):
     else:
         return "Error: No AI response received."
 
-#### Routes
+# Routes
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
@@ -112,8 +129,37 @@ def chat():
     if not user_question or not user_id:
         return jsonify({"response": "Missing question or user ID."}), 400
 
+    # Generate the response from the Gemini model
     response = generate_response(user_question, user_id)
+
+    # Save both user and bot messages to the database
+    user_message = ChatHistory(user_id=user_id, role='user', message=user_question)
+    bot_message = ChatHistory(user_id=user_id, role='bot', message=response)
+
+    # Add messages to the session
+    db.session.add(user_message)
+    db.session.add(bot_message)
+    db.session.commit()  # Save the messages to the database
+
     return jsonify({"response": response})
+
+@app.route("/history", methods=["POST"])
+def get_history():
+    data = request.json
+    user_id = data.get("user_id")
+
+    # Get chat history for the specified user from the database
+    chat_history = ChatHistory.query.filter_by(user_id=user_id).all()
+
+    # Format the chat history
+    history = []
+    for message in chat_history:
+        history.append({
+            'role': message.role,
+            'message': message.message
+        })
+
+    return jsonify({"history": history})
 
 @app.route("/")
 def home():
