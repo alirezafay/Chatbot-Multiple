@@ -94,18 +94,25 @@
     }
 
     // Show all messages
-    function updateChatDisplay() {
-        const messagesDiv = document.getElementById('messages');
-        messagesDiv.innerHTML = '';
+// Show all messages
+function updateChatDisplay() {
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.innerHTML = '';  // Clear the chat window
 
-        chatHistory.forEach(msg => {
-            const roleClass = msg.role === 'user' ? 'user-message' : 'bot-message';
-            const label = msg.role === 'user' ? 'You' : 'Bot';
-            messagesDiv.innerHTML += `<div class="${roleClass}"><strong>${label}:</strong> ${msg.content}</div>`;
-        });
+    chatHistory.forEach(msg => {
+        const roleClass = msg.role === 'user' ? 'user-message' : 'bot-message';
+        const label = msg.role === 'user' ? 'You' : 'Bot';
 
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
+        // Format the message content (replace \n with <br>)
+        const formattedContent = formatResponse(msg.content);
+
+        // Add the formatted message to the chat window
+        messagesDiv.innerHTML += `<div class="${roleClass}"><strong>${label}:</strong> ${formattedContent}</div>`;
+    });
+
+    // Scroll to the bottom of the chat
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
 
     // On page load, load default profile and chat
     window.onload = () => {
