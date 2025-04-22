@@ -22,10 +22,9 @@ class ChatHistory(db.Model):
     def __repr__(self):
         return f'<ChatHistory {self.id} {self.user_id} {self.role}>'
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
+with app.app_context():
+    db.create_all() 
+    
 # Load user profile data from Google Drive
 def load_all_user_data(file_id):
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
