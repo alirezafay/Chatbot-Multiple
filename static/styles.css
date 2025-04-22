@@ -1,4 +1,3 @@
-/* General Styling (Minimalistic) */
 body {
     font-family: Arial, sans-serif;
     display: flex;
@@ -7,24 +6,26 @@ body {
     height: 100vh;
     margin: 0;
     background-color: #f8f9fa;
+    background-image: url("background.png"); 
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    position: relative; /* Keeps layout structured */
+    font-family: Arial, sans-serif;
+    position: relative; 
 }
 
 .blurred-text {
     position: absolute;
-    top: 5%; /* Adjust the position as needed */
-    left: 50%; /* Centers the text horizontally */
-    transform: translateX(-50%); /* Ensures proper centering */
+    top: 5%;
+    left: 50%; 
+    transform: translateX(-50%); 
     font-size: 70px;
     font-weight: bold;
-    color: white; /* Text color */
+    color: whit;
     text-align: center;
     filter: blur(1px);
-    z-index: 2; /* Ensures the text stays above the background */
-    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8); /* Adds some shadow to enhance visibility */
+    z-index: 2; 
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8); 
 }
 
 /* Chat Container */
@@ -125,22 +126,4 @@ button:hover {
     font-size: 16px;
     color: grey;
     animation: typing 1.5s infinite;
-}
-
-/* Ahmad's Theme */
-body[data-profile="user_ahmad"] {
-    background-image: url("https://drive.google.com/uc?export=download&id=1HcbovumEJL2NsW0q7qL1jeD0iqQ62ptJ");
-}
-
-.chat-header[data-profile="user_ahmad"] {
-    background: #2c3e50;
-}
-
-/* Sara's Theme */
-body[data-profile="user_sara"] {
-    background-image: url("https://drive.google.com/uc?export=download&id=1HcbovumEJL2NsW0q7qL1jeD0iqQ62ptJ");
-}
-
-.chat-header[data-profile="user_sara"] {
-    background: #8e44ad;
 }
