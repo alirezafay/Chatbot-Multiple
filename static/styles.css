@@ -30,7 +30,7 @@ body {
 /* Chat Container */
 .chat-container {
     width: 1400px;
-    height: 700px;
+    height: 600px;
     background: rgb(255, 255, 255, 0.5);
     border-radius: 10px;
     padding: 20px;
@@ -55,6 +55,8 @@ body {
     display: flex;
     flex-direction: column;
     background: #ffffff9d;
+    border-radius: 18px;
+
 }
 
 /* Bubble-style Messages (Messaging App UI) */
@@ -78,6 +80,50 @@ body {
     align-self: flex-start;
 }
 
+/* Style the select dropdown */
+#userSelector {
+    font-family: 'Arial', sans-serif;  /* Change font type */
+    font-size: 16px;  /* Change font size */
+    background-color: #f0f0f0;  /* Background color */
+    color: #050627;  /* Text color */
+    border: 2px solid #ccc;  /* Border color */
+    padding: 8px;  /* Padding inside the dropdown */
+    border-radius: 5px;  /* Rounded corners */
+    width: 200px;  /* Width of the dropdown */
+    cursor: pointer;  /* Change cursor to pointer */
+    transition: background-color 0.3s ease;  /* Smooth background color transition */
+}
+
+/* Style the options inside the select */
+#userSelector option {
+    font-family: 'Arial', sans-serif;  /* Change font type for options */
+    font-size: 16px;  /* Change font size for options */
+    padding: 8px;  /* Padding inside the options */
+}
+
+/* Hover effect for the dropdown */
+#userSelector:hover {
+    background-color: #f5f5f5;  /* Change background color on hover */
+}
+
+/* Style the select dropdown when focused (clicked) */
+#userSelector:focus {
+    border-color: #0f4faf;  /* Change border color on focus */
+    outline: none;  /* Remove default focus outline */
+}
+
+/* Optional: Style the select for smaller screens */
+@media (max-width: 600px) {
+    #userSelector {
+        width: 100%;  /* Make the select dropdown take full width on small screens */
+    }
+}
+
+
+
+
+
+
 /* Input Field */
 textarea {
     width: 98.7%;
@@ -85,7 +131,9 @@ textarea {
     padding: 8px;
     border-radius: 10px;
     background: #ffffffea;
-    border: 1px solid #fafafac4;
+    border: 1px solid #fafafac4;  
+    font-family: Arial, sans-serif;  /* Font type */
+    font-size: 20px;
 }
 
 /* Button Styling */
