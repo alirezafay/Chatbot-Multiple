@@ -5,7 +5,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-image: url("AI and Corporation.png"); 
+    background-image: url("background.png"); 
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
@@ -61,8 +61,6 @@ body {
 .user-message {
     background: #007bff;
     color: white;
-    text-align: right;
-    margin: 5px 0;
     padding: 8px 12px;
     border-radius: 18px;
     margin-bottom: 10px;
@@ -71,9 +69,7 @@ body {
 
 .bot-message {
     background: #f1f1f1;
-    text-align: left;
     color: black;
-    margin: 5px 0;
     padding: 8px 12px;
     border-radius: 18px;
     margin-bottom: 10px;
