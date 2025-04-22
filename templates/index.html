@@ -69,7 +69,10 @@
       chatHistory.push({ role: 'user', content: question });
       input.value = '';
       updateChatDisplay();
-
+      
+      chatHistory.push({ role: 'bot', content: '🤖 Thinking...' });
+      updateChatDisplay();
+      
       try {
         const response = await fetch('/chat', {
           method: 'POST',
