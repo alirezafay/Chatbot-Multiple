@@ -5,13 +5,14 @@ import json
 import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat_history.db'  # SQLite database file
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat_history.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
 API_KEY = os.environ.get("API_KEY")
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
 
-# Define the ChatHistory model for storing messages
+# Database model
 class ChatHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String(80), nullable=False)
@@ -23,8 +24,9 @@ class ChatHistory(db.Model):
 
 @app.before_first_request
 def create_tables():
-    db.create_all()  # Creates the tables in the database when the app starts
+    db.create_all()
 
+# Load user profile data from Google Drive
 def load_all_user_data(file_id):
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     response = requests.get(url)
@@ -36,11 +38,10 @@ def load_all_user_data(file_id):
     else:
         raise Exception(f"Failed to download: {response.status_code}")
 
-# Load user data once when app starts
-file_id = "1DiIYwGARYQGxPXpEWgugr6RNyu1c48tC"  # Replace this with the new file_id containing both users
+file_id = "1DiIYwGARYQGxPXpEWgugr6RNyu1c48tC"  # Replace with your own Google Drive file ID
 all_users_data = load_all_user_data(file_id)
 
-# Generate Context for Specific User
+# Build personalized prompt
 def build_context(user_profile):
     return f"""
 User Profile:
@@ -102,14 +103,13 @@ Instructions:
 User Question: INSERT_USER_QUESTION_HERE
 """
 
-# Send Request to Gemini
+# Generate response from Gemini
 def generate_response(user_question, user_id):
     user_profile = all_users_data["users"].get(user_id)
     if not user_profile:
         return f"Error: User ID '{user_id}' not found."
 
     prompt = build_context(user_profile).replace("INSERT_USER_QUESTION_HERE", user_question)
-
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     headers = {"Content-Type": "application/json"}
 
@@ -119,51 +119,54 @@ def generate_response(user_question, user_id):
     else:
         return "Error: No AI response received."
 
-# Routes
+# --- ROUTES ---
+
+@app.route("/")
+def home():
+    return render_template("index.html")
+
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
     user_question = data.get("question")
-    user_id = data.get("user_id")  # e.g., 'user_ahmad' or 'user_sara'
+    user_id = data.get("user_id")
 
     if not user_question or not user_id:
         return jsonify({"response": "Missing question or user ID."}), 400
 
-    # Generate the response from the Gemini model
-    response = generate_response(user_question, user_id)
+    # Save user question
+    db.session.add(ChatHistory(user_id=user_id, role='user', message=user_question))
+    db.session.commit()
 
-    # Save both user and bot messages to the database
-    user_message = ChatHistory(user_id=user_id, role='user', message=user_question)
-    bot_message = ChatHistory(user_id=user_id, role='bot', message=response)
+    # Generate and save bot response
+    response_text = generate_response(user_question, user_id)
+    db.session.add(ChatHistory(user_id=user_id, role='bot', message=response_text))
+    db.session.commit()
 
-    # Add messages to the session
-    db.session.add(user_message)
-    db.session.add(bot_message)
-    db.session.commit()  # Save the messages to the database
-
-    return jsonify({"response": response})
+    return jsonify({"response": response_text})
 
 @app.route("/history", methods=["POST"])
 def get_history():
     data = request.json
     user_id = data.get("user_id")
 
-    # Get chat history for the specified user from the database
-    chat_history = ChatHistory.query.filter_by(user_id=user_id).all()
+    if not user_id:
+        return jsonify({"history": []})
 
-    # Format the chat history
-    history = []
-    for message in chat_history:
-        history.append({
-            'role': message.role,
-            'message': message.message
-        })
-
+    messages = ChatHistory.query.filter_by(user_id=user_id).all()
+    history = [{"role": msg.role, "content": msg.message} for msg in messages]
     return jsonify({"history": history})
 
-@app.route("/")
-def home():
-    return render_template("index.html")
+@app.route("/clear_history", methods=["POST"])
+def clear_history():
+    data = request.json
+    user_id = data.get("user_id")
+    if user_id:
+        ChatHistory.query.filter_by(user_id=user_id).delete()
+        db.session.commit()
+        return jsonify({"message": "Chat history cleared."})
+    return jsonify({"error": "No user_id provided."}), 400
 
+# --- MAIN ---
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
