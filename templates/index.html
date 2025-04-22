@@ -54,7 +54,10 @@
         updateChatDisplay();
     }
 
-    // Send message
+    function formatResponse(responseText) {
+    return responseText.replace(/\n/g, '<br>');
+}
+        // Send message
     async function sendMessage() {
         const question = document.getElementById('userInput').value;
         const userId = document.getElementById('userSelector').value;
@@ -80,6 +83,8 @@
 
         const data = await response.json();
         const botResponse = data.response || "Sorry, I didn't understand that.";
+        const formattedBotResponse = formatResponse(botResponse);
+
 
         // Add bot message to history
         chatHistory.push({ role: 'bot', content: botResponse });
