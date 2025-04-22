@@ -1,124 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat with Your Bot</title>
-    <link rel="stylesheet" href="/static/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat with Your Bot</title>
+  <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-    <div class="blurred-text">شرکت توسعه‌ی هتل‌سازی دریا آسیا</div>
-    <div class="chat-container">
-        <div class="chat-box">
-            <div class="chat-header" id="chatHeader">Personalized AI Chatbot</div>
+  <div class="blurred-text">شرکت توسعه‌ی هتل‌سازی دریا آسیا</div>
 
-            <!-- Profile Selection -->
-            <select id="userSelector" onchange="updateProfile()">
-                <option value="user_ahmad">Ahmad</option>
-                <option value="user_sara">Sara</option>
-            </select>
+  <div class="chat-container">
+    <div class="chat-box">
+      <div class="chat-header" id="chatHeader">Personalized AI Chatbot</div>
 
-            <div class="chat-messages" id="messages"></div>
+      <!-- Profile Selection -->
+      <select id="userSelector" onchange="updateProfile()">
+        <option value="user_ahmad">Ahmad</option>
+        <option value="user_sara">Sara</option>
+      </select>
 
-            <textarea id="userInput" placeholder="Ask your questions..."></textarea>
-            <button onclick="sendMessage()">Send</button>
-        </div>
+      <div class="chat-messages" id="messages"></div>
+
+      <textarea id="userInput" placeholder="Ask your questions..."></textarea>
+      <button onclick="sendMessage()">Send</button>
     </div>
+  </div>
 
-    <script src="script.js"></script>
-    <script>
-    let chatHistory = [];  // Store all chat messages
+  <script>
+    let chatHistory = [];
 
-    // Dynamically update header and load history
     async function updateProfile() {
-        const userId = document.getElementById('userSelector').value;
-        const chatHeader = document.getElementById('chatHeader');
+      const userId = document.getElementById('userSelector').value;
+      const chatHeader = document.getElementById('chatHeader');
 
-        if (userId === 'user_ahmad') {
-            chatHeader.textContent = 'Chat with Ahmad - Business Manager';
-        } else {
-            chatHeader.textContent = 'Chat with Sara - AI Engineer';
-        }
+      chatHeader.textContent = userId === 'user_ahmad'
+        ? 'Chat with Ahmad - Business Manager'
+        : 'Chat with Sara - AI Engineer';
 
-        // Load chat history from backend
+      try {
         const response = await fetch('/history', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId })
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId })
         });
 
         const data = await response.json();
         chatHistory = data.history || [];
-
-        // Update chat display
         updateChatDisplay();
+      } catch (err) {
+        console.error('Error loading chat history:', err);
+      }
     }
 
-    function formatResponse(responseText) {
-    return responseText.replace(/\n/g, '<br>');
-}
-        // Send message
+    function formatResponse(text) {
+      return text.replace(/\n/g, '<br>');
+    }
+
     async function sendMessage() {
-        const question = document.getElementById('userInput').value;
-        const userId = document.getElementById('userSelector').value;
+      const input = document.getElementById('userInput');
+      const userId = document.getElementById('userSelector').value;
+      const question = input.value.trim();
 
-        if (!question.trim()) {
-            alert("Please enter a question!");
-            return;
-        }
+      if (!question) {
+        alert("Please enter a question!");
+        return;
+      }
 
-        // Add user message to history
-        chatHistory.push({ role: 'user', content: question });
+      chatHistory.push({ role: 'user', content: question });
+      input.value = '';
+      updateChatDisplay();
 
-        // Clear input and update display
-        document.getElementById('userInput').value = '';
-        updateChatDisplay();
-
-        // Send to backend
+      try {
         const response = await fetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: question, user_id: userId })
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, user_id: userId })
         });
 
         const data = await response.json();
-        const botResponse = data.response || "Sorry, I didn't understand that.";
-        const formattedBotResponse = formatResponse(botResponse);
-
-
-        // Add bot message to history
-        chatHistory.push({ role: 'bot', content: botResponse });
-
-        // Update display
+        const botReply = data.response || "Sorry, I didn't understand that.";
+        chatHistory.push({ role: 'bot', content: botReply });
         updateChatDisplay();
+      } catch (err) {
+        console.error('Error sending message:', err);
+        chatHistory.push({ role: 'bot', content: "Error connecting to the server." });
+        updateChatDisplay();
+      }
     }
 
-    // Show all messages
-// Show all messages
-function updateChatDisplay() {
-    const messagesDiv = document.getElementById('messages');
-    messagesDiv.innerHTML = '';  // Clear the chat window
+    function updateChatDisplay() {
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML = '';
 
-    chatHistory.forEach(msg => {
+      chatHistory.forEach(msg => {
         const roleClass = msg.role === 'user' ? 'user-message' : 'bot-message';
         const label = msg.role === 'user' ? 'You' : 'Bot';
+        const formatted = formatResponse(msg.content);
+        messagesDiv.innerHTML += `<div class="${roleClass}"><strong>${label}:</strong> ${formatted}</div>`;
+      });
 
-        // Format the message content (replace \n with <br>)
-        const formattedContent = formatResponse(msg.content);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
 
-        // Add the formatted message to the chat window
-        messagesDiv.innerHTML += `<div class="${roleClass}"><strong>${label}:</strong> ${formattedContent}</div>`;
-    });
-
-    // Scroll to the bottom of the chat
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-
-    // On page load, load default profile and chat
     window.onload = () => {
-        updateProfile();
+      updateProfile();
     };
-</script>
-
+  </script>
 </body>
 </html>
