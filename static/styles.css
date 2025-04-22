@@ -59,6 +59,7 @@ body {
 
 /* Bubble-style Messages (Messaging App UI) */
 .user-message {
+    text-align: right;
     background: #007bff;
     color: white;
     padding: 8px 12px;
@@ -68,6 +69,7 @@ body {
 }
 
 .bot-message {
+    text-align: left;
     background: #f1f1f1;
     color: black;
     padding: 8px 12px;
