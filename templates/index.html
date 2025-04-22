@@ -82,6 +82,9 @@
 
         const data = await response.json();
         const botReply = data.response || "Sorry, I didn't understand that.";
+        
+        chatHistory.pop();
+
         chatHistory.push({ role: 'bot', content: botReply });
         updateChatDisplay();
       } catch (err) {
