@@ -5,8 +5,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    background-color: #f8f9fa;
-    background-image: url("AI and Corporation.png"); 
+    background-image: url("background.png"); 
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
@@ -21,16 +20,17 @@ body {
     transform: translateX(-50%); 
     font-size: 70px;
     font-weight: bold;
-    color: whit;
+    color: white;
     text-align: center;
     filter: blur(1px);
     z-index: 2; 
-    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8); 
+    text-shadow: 2px 2px 6px rgba(255, 255, 255, 0.8); 
 }
 
 /* Chat Container */
 .chat-container {
-    width: 400px;
+    width: 1400px;
+    height: 700px;
     background: rgb(255, 255, 255, 0.5);
     border-radius: 10px;
     padding: 20px;
