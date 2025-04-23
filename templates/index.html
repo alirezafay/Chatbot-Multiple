@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -11,7 +11,7 @@
 
   <div class="chat-container">
     <div class="chat-box">
-      <div class="chat-header" id="chatHeader">Personalized AI Chatbot</div>
+      <div class="chat-header" id="chatHeader">ربات هوش مصنوعی شخصی‌سازی‌شده</div>
 
       <!-- Profile Selection -->
       <select id="userSelector" onchange="updateProfile()">
@@ -21,8 +21,8 @@
 
       <div class="chat-messages" id="messages"></div>
 
-      <textarea id="userInput" placeholder="Ask your questions..."></textarea>
-      <button onclick="sendMessage()">Send</button>
+      <textarea id="userInput" placeholder="سوال خود را بپرسید..."></textarea>
+      <button onclick="sendMessage()">ارسال</button>
     </div>
   </div>
 
@@ -34,8 +34,8 @@
       const chatHeader = document.getElementById('chatHeader');
 
       chatHeader.textContent = userId === 'user_ahmad'
-        ? 'Chat with Ahmad - Business Manager'
-        : 'Chat with Sara - AI Engineer';
+        ? 'چت با احمد - مدیر کسب‌وکار'
+        : 'چت با سارا - مهندس هوش مصنوعی';
 
       try {
         const response = await fetch('/history', {
@@ -48,7 +48,7 @@
         chatHistory = data.history || [];
         updateChatDisplay();
       } catch (err) {
-        console.error('Error loading chat history:', err);
+        console.error('خطا در بارگذاری تاریخچه گفتگو:', err);
       }
     }
 
@@ -62,34 +62,33 @@
       const question = input.value.trim();
 
       if (!question) {
-        alert("Please enter a question!");
+        alert("لطفاً سوالی وارد کنید!");
         return;
       }
 
       chatHistory.push({ role: 'user', content: question });
       input.value = '';
       updateChatDisplay();
-      
-      chatHistory.push({ role: 'bot', content: '🤖 Thinking...' });
+
+      chatHistory.push({ role: 'bot', content: '🤖 در حال پردازش...' });
       updateChatDisplay();
-      
+
       try {
         const response = await fetch('/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question, user_id: userId })
+          body: JSON.stringify({ query: question, user_id: userId })
         });
 
         const data = await response.json();
-        const botReply = data.response || "Sorry, I didn't understand that.";
-        
-        chatHistory.pop();
+        const botReply = data.reply || "متأسفم، متوجه نشدم.";
 
+        chatHistory.pop();
         chatHistory.push({ role: 'bot', content: botReply });
         updateChatDisplay();
       } catch (err) {
-        console.error('Error sending message:', err);
-        chatHistory.push({ role: 'bot', content: "Error connecting to the server." });
+        console.error('خطا در ارسال پیام:', err);
+        chatHistory.push({ role: 'bot', content: "خطا در اتصال به سرور." });
         updateChatDisplay();
       }
     }
@@ -100,7 +99,7 @@
 
       chatHistory.forEach(msg => {
         const roleClass = msg.role === 'user' ? 'user-message' : 'bot-message';
-        const label = msg.role === 'user' ? 'You' : 'Bot';
+        const label = msg.role === 'user' ? 'شما' : 'ربات';
         const formatted = formatResponse(msg.content);
         messagesDiv.innerHTML += `<div class="${roleClass}"><strong>${label}:</strong> ${formatted}</div>`;
       });
