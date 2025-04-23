@@ -10,7 +10,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 API_KEY = os.environ.get("API_KEY")
-URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+CSE_ID = os.environ.get("CSE_ID")
+GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
+GOOGLE_SEARCH_URL = "https://www.googleapis.com/customsearch/v1"
 
 # Database model
 class ChatHistory(db.Model):
@@ -23,8 +26,8 @@ class ChatHistory(db.Model):
         return f'<ChatHistory {self.id} {self.user_id} {self.role}>'
 
 with app.app_context():
-    db.create_all() 
-    
+    db.create_all()
+
 # Load user profile data from Google Drive
 def load_all_user_data(file_id):
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
@@ -37,7 +40,7 @@ def load_all_user_data(file_id):
     else:
         raise Exception(f"Failed to download: {response.status_code}")
 
-file_id = "1DiIYwGARYQGxPXpEWgugr6RNyu1c48tC"  # Replace with your own Google Drive file ID
+file_id = "1DiIYwGARYQGxPXpEWgugr6RNyu1c48tC"
 all_users_data = load_all_user_data(file_id)
 
 # Build personalized prompt
@@ -112,13 +115,27 @@ def generate_response(user_question, user_id):
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     headers = {"Content-Type": "application/json"}
 
-    response = requests.post(URL, json=payload, headers=headers)
+    response = requests.post(GEMINI_URL, json=payload, headers=headers)
     if "candidates" in response.json():
         return response.json()["candidates"][0]["content"]["parts"][0]["text"]
     else:
         return "Error: No AI response received."
 
-# --- ROUTES ---
+# Search Persian content via Google CSE
+def search_persian_content(query):
+    params = {
+        "key": GOOGLE_API_KEY,
+        "cx": CSE_ID,
+        "q": query,
+        "num": 3,
+        "lr": "lang_fa"
+    }
+    response = requests.get(GOOGLE_SEARCH_URL, params=params)
+    if response.status_code == 200:
+        results = response.json().get("items", [])
+        return "\n\n".join([f"🔗 <a href='{item['link']}' target='_blank'>{item['title']}</a><br>{item.get('snippet', '')}" for item in results])
+    else:
+        return "No Persian content found."
 
 @app.route("/")
 def home():
@@ -127,22 +144,24 @@ def home():
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.json
-    user_question = data.get("question")
-    user_id = data.get("user_id")
+    query = data.get("query")
+    user_id = data.get("user_id", "anonymous")
 
-    if not user_question or not user_id:
-        return jsonify({"response": "Missing question or user ID."}), 400
+    if not query:
+        return jsonify({"reply": "Missing query."}), 400
 
-    # Save user question
-    db.session.add(ChatHistory(user_id=user_id, role='user', message=user_question))
+    # Save user message
+    db.session.add(ChatHistory(user_id=user_id, role='user', message=query))
     db.session.commit()
 
-    # Generate and save bot response
-    response_text = generate_response(user_question, user_id)
-    db.session.add(ChatHistory(user_id=user_id, role='bot', message=response_text))
+    # Try search engine
+    search_result = search_persian_content(query)
+
+    # Save bot reply
+    db.session.add(ChatHistory(user_id=user_id, role='bot', message=search_result))
     db.session.commit()
 
-    return jsonify({"response": response_text})
+    return jsonify({"reply": search_result})
 
 @app.route("/history", methods=["POST"])
 def get_history():
@@ -166,6 +185,5 @@ def clear_history():
         return jsonify({"message": "Chat history cleared."})
     return jsonify({"error": "No user_id provided."}), 400
 
-# --- MAIN ---
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
