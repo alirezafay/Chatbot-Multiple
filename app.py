@@ -145,8 +145,8 @@ def search_persian_content(query):
         "num": 3,
         "lr": "lang_fa"
     }
-     try:
-        response = requests.get(url, params=params)
+    try:  
+        response = requests.get(GOOGLE_SEARCH_URL, params=params)
         response.raise_for_status()
         data = response.json()
         snippets = "\n\n".join(
@@ -156,7 +156,6 @@ def search_persian_content(query):
         if not snippets:
             return "متأسفم، اطلاعات مرتبطی پیدا نشد."
 
-        # 🔥 Send the snippets and query to Gemini
         return extract_answer_with_gemini(query, snippets)
 
     except requests.RequestException as e:
