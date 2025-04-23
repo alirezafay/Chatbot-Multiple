@@ -1,5 +1,6 @@
 body {
-    font-family: Arial, sans-serif;
+    direction: rtl;
+    font-family: 'Vazirmatn', Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -9,7 +10,6 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    font-family: Arial, sans-serif;
     position: relative; 
 }
 
@@ -27,17 +27,15 @@ body {
     text-shadow: 2px 2px 6px rgba(255, 255, 255, 0.8); 
 }
 
-/* Chat Container */
 .chat-container {
     width: 1400px;
     height: 600px;
-    background: rgb(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Chat Header */
 .chat-header {
     background: rgba(11, 165, 192, 0.7);
     color: white;
@@ -47,7 +45,6 @@ body {
     font-size: 24px;
 }
 
-/* Chat Messages Box */
 .chat-messages {
     height: 350px;
     overflow-y: auto;
@@ -56,10 +53,8 @@ body {
     flex-direction: column;
     background: #ffffff9d;
     border-radius: 18px;
-
 }
 
-/* Bubble-style Messages (Messaging App UI) */
 .user-message {
     text-align: right;
     background: #007bff;
@@ -71,7 +66,7 @@ body {
 }
 
 .bot-message {
-    text-align: left;
+    text-align: right;
     background: #f1f1f1;
     color: black;
     padding: 8px 12px;
@@ -80,63 +75,55 @@ body {
     align-self: flex-start;
 }
 
-/* Style the select dropdown */
 #userSelector {
-    font-family: 'Arial', sans-serif;  /* Change font type */
-    font-size: 16px;  /* Change font size */
-    background-color: #f0f0f0;  /* Background color */
-    color: #050627;  /* Text color */
-    border: 2px solid #ccc;  /* Border color */
-    padding: 8px;  /* Padding inside the dropdown */
-    border-radius: 5px;  /* Rounded corners */
-    width: 200px;  /* Width of the dropdown */
-    cursor: pointer;  /* Change cursor to pointer */
-    transition: background-color 0.3s ease;  /* Smooth background color transition */
+    font-family: 'Vazirmatn', Arial, sans-serif;
+    font-size: 16px;
+    background-color: #f0f0f0;
+    color: #050627;
+    border: 2px solid #ccc;
+    padding: 8px;
+    border-radius: 5px;
+    width: 200px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    direction: rtl;
+    text-align: right;
 }
 
-/* Style the options inside the select */
 #userSelector option {
-    font-family: 'Arial', sans-serif;  /* Change font type for options */
-    font-size: 16px;  /* Change font size for options */
-    padding: 8px;  /* Padding inside the options */
+    font-family: 'Vazirmatn', Arial, sans-serif;
+    font-size: 16px;
+    padding: 8px;
 }
 
-/* Hover effect for the dropdown */
 #userSelector:hover {
-    background-color: #f5f5f5;  /* Change background color on hover */
+    background-color: #f5f5f5;
 }
 
-/* Style the select dropdown when focused (clicked) */
 #userSelector:focus {
-    border-color: #0f4faf;  /* Change border color on focus */
-    outline: none;  /* Remove default focus outline */
+    border-color: #0f4faf;
+    outline: none;
 }
 
-/* Optional: Style the select for smaller screens */
 @media (max-width: 600px) {
     #userSelector {
-        width: 100%;  /* Make the select dropdown take full width on small screens */
+        width: 100%;
     }
 }
 
-
-
-
-
-
-/* Input Field */
 textarea {
     width: 98.7%;
     height: 80px;
     padding: 8px;
     border-radius: 10px;
     background: #ffffffea;
-    border: 1px solid #fafafac4;  
-    font-family: Arial, sans-serif;  /* Font type */
+    border: 1px solid #fafafac4;
+    font-family: 'Vazirmatn', Arial, sans-serif;
     font-size: 20px;
+    direction: rtl;
+    text-align: right;
 }
 
-/* Button Styling */
 button {
     width: 100%;
     padding: 10px;
@@ -153,7 +140,6 @@ button:hover {
     background: #003350;
 }
 
-/* Dark Mode Style */
 @media (prefers-color-scheme: dark) {
     body {
         background: #121212;
@@ -165,7 +151,6 @@ button:hover {
     }
 }
 
-/* Typing Animation (Animated UI) */
 @keyframes typing {
     0% { opacity: 0.2; }
     50% { opacity: 1; }
