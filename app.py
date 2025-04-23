@@ -53,10 +53,15 @@ def extract_answer_with_gemini(question, snippets):
 
     با توجه به اطلاعات بالا، لطفاً پاسخی واضح، دقیق و کوتاه به زبان فارسی بده. فقط پاسخ مفید بده و از آوردن لینک یا اطلاعات اضافی خودداری کن.
     """
-    model = GenerativeModel("gemini-pro")
-    chat = model.start_chat()
-    response = chat.send_message(prompt)
-    return response.text.strip()
+
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    headers = {"Content-Type": "application/json"}
+
+    response = requests.post(GEMINI_URL, json=payload, headers=headers)
+    try:
+        return response.json()["candidates"][0]["content"]["parts"][0]["text"]
+    except (KeyError, IndexError):
+        return "خطا در دریافت پاسخ از مدل زبان."
 
 
 def build_context(user_profile):
