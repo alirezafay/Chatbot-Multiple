@@ -43,7 +43,22 @@ def load_all_user_data(file_id):
 file_id = "1DiIYwGARYQGxPXpEWgugr6RNyu1c48tC"
 all_users_data = load_all_user_data(file_id)
 
-# Build personalized prompt
+def extract_answer_with_gemini(question, snippets):
+    prompt = f"""
+    سوال کاربر:
+    {question}
+
+    نتایج جستجو:
+    {snippets}
+
+    با توجه به اطلاعات بالا، لطفاً پاسخی واضح، دقیق و کوتاه به زبان فارسی بده. فقط پاسخ مفید بده و از آوردن لینک یا اطلاعات اضافی خودداری کن.
+    """
+    model = GenerativeModel("gemini-pro")
+    chat = model.start_chat()
+    response = chat.send_message(prompt)
+    return response.text.strip()
+
+
 def build_context(user_profile):
     return f"""
 User Profile:
@@ -130,12 +145,23 @@ def search_persian_content(query):
         "num": 3,
         "lr": "lang_fa"
     }
-    response = requests.get(GOOGLE_SEARCH_URL, params=params)
-    if response.status_code == 200:
-        results = response.json().get("items", [])
-        return "\n\n".join([f"🔗 <a href='{item['link']}' target='_blank'>{item['title']}</a><br>{item.get('snippet', '')}" for item in results])
-    else:
-        return "No Persian content found."
+     try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        snippets = "\n\n".join(
+            [item.get("snippet") for item in data.get("items", []) if item.get("snippet")]
+        )
+
+        if not snippets:
+            return "متأسفم، اطلاعات مرتبطی پیدا نشد."
+
+        # 🔥 Send the snippets and query to Gemini
+        return extract_answer_with_gemini(query, snippets)
+
+    except requests.RequestException as e:
+        print("Search failed:", e)
+        return "خطا در دریافت اطلاعات از اینترنت."
 
 @app.route("/")
 def home():
