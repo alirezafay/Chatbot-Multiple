@@ -12,7 +12,6 @@ db = SQLAlchemy(app)
 API_KEY = os.environ.get("API_KEY")
 URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
 
-# Database model
 class ChatHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String(80), nullable=False)
@@ -25,7 +24,6 @@ class ChatHistory(db.Model):
 with app.app_context():
     db.create_all() 
     
-# Load user profile data from Google Drive
 def load_all_user_data(file_id):
     url = f"https://drive.google.com/uc?export=download&id={file_id}"
     response = requests.get(url)
@@ -40,7 +38,6 @@ def load_all_user_data(file_id):
 file_id = "1DiIYwGARYQGxPXpEWgugr6RNyu1c48tC"  # Replace with your own Google Drive file ID
 all_users_data = load_all_user_data(file_id)
 
-# Build personalized prompt
 def build_context(user_profile):
     return f"""
 User Profile:
@@ -102,7 +99,6 @@ Instructions:
 User Question: INSERT_USER_QUESTION_HERE
 """
 
-# Generate response from Gemini
 def generate_response(user_question, user_id):
     user_profile = all_users_data["users"].get(user_id)
     if not user_profile:
@@ -118,8 +114,6 @@ def generate_response(user_question, user_id):
     else:
         return "Error: No AI response received."
 
-# --- ROUTES ---
-
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -133,11 +127,9 @@ def chat():
     if not user_question or not user_id:
         return jsonify({"response": "Missing question or user ID."}), 400
 
-    # Save user question
     db.session.add(ChatHistory(user_id=user_id, role='user', message=user_question))
     db.session.commit()
 
-    # Generate and save bot response
     response_text = generate_response(user_question, user_id)
     db.session.add(ChatHistory(user_id=user_id, role='bot', message=response_text))
     db.session.commit()
@@ -166,6 +158,5 @@ def clear_history():
         return jsonify({"message": "Chat history cleared."})
     return jsonify({"error": "No user_id provided."}), 400
 
-# --- MAIN ---
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
